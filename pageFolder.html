@@ -1,0 +1,98 @@
+<DOCTYPE html>
+<html>
+<body>
+    <input type="file" id="input"/>
+    <canvas id="fold-template">
+    <canvas>
+
+    <script>
+        window.onload = function() {
+            var input = document.getElementById('input');
+            input.addEventListener('change', drawImageToCanvas);
+        };
+
+        function drawImageToCanvas(e) {
+            var img = new Image;
+            img.onload = function() {
+                context.rotate(90*Math.PI/180);
+                 context.drawImage(img, rowHeight*offsetRows,-width,height - (rowHeight*offsetRows*2), width);
+                 //context.drawImage(img,0,-300,200,200);
+                 context.rotate(-90*Math.PI/180);
+                 drawLines();
+            }
+            img.src = URL.createObjectURL(e.target.files[0]);
+        }
+
+        var lines = 1000;
+
+        var rowHeight = 14;
+        var lineWidth = 2;
+        var offsetRows = 20;
+
+        var canvas = document.getElementById("fold-template");
+
+        var height = rowHeight * lines + (lineWidth * 2);
+        var width = 750;
+        
+        canvas.height = height
+        canvas.width = width;
+
+        var context = canvas.getContext("2d");
+
+        context.fillStyle = "#000";
+        context.lineWidth = 1;
+        context.font = '12px; "Courier New", Courier, monospace';
+        var fontWidth = 6;
+
+        var lineNum = 1;
+        var pad = "0000"
+
+        if (getRatio() !== 1) {
+            var ratio = getRatio();
+            var oldWidth = canvas.width;
+            var oldHeight = canvas.height;
+
+            canvas.width = oldWidth * ratio;
+            canvas.height = oldHeight * ratio;
+
+            canvas.style.width = oldWidth + 'px';
+            canvas.style.height = oldHeight + 'px';
+
+            // now scale the context to counter
+            // the fact that we've manually scaled
+            // our canvas element
+            context.scale(ratio, ratio);
+        }        
+
+        function drawLines() {
+            for (var i = lineWidth; i < height; i += rowHeight) {
+                context.moveTo(0,i);
+
+                context.lineTo(width, i);
+                context.stroke();
+
+                var lineText = lineNum + "";
+
+                var offset = -(fontWidth * 4) + (fontWidth * (4 - lineText.length));
+                console.log('lineNum: ', lineNum);
+                console.log('offset: ', offset);
+
+                context.fillText(lineText, 0, i + 12);
+                context.fillText(lineText, width + offset, i + 12);
+                lineNum++;
+            }
+        }
+
+        function getRatio() {
+            devicePixelRatio = window.devicePixelRatio || 1;
+            backingStoreRatio = context.webkitBackingStorePixelRatio ||
+                            context.mozBackingStorePixelRatio ||
+                            context.msBackingStorePixelRatio ||
+                            context.oBackingStorePixelRatio ||
+                            context.backingStorePixelRatio || 1;
+
+            return devicePixelRatio / backingStoreRatio;
+        }
+    </script>
+</body>
+</html>
